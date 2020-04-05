@@ -18,6 +18,7 @@ Note: Highly recommended to use Java 8.
 Simply place the output jar from the step above in your server's `config/mods` directory and restart the server.
 List your currently installed plugins/mods by running the `mods` command.
 
+##Configuring
 If you want to adjust any settings, just change the settings.json
 
 It should look like this
