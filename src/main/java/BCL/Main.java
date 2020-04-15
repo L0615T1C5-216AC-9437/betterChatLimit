@@ -12,6 +12,10 @@ import mindustry.plugin.Plugin;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +23,8 @@ import static mindustry.Vars.*;
 
 public class Main extends Plugin {
     private JSONObject alldata;
-    private JSONObject data; //token, channel_id, role_id
+    private JSONObject data;
+    public static JSONObject badList;
     private Thread mt = Thread.currentThread();
     private int messages;
     private int timespan;
@@ -35,6 +40,16 @@ public class Main extends Plugin {
                 return;
             } else {
                 data = alldata.getJSONObject("bcl");
+            }
+            if (!alldata.has("badList")){
+                Log.err("============");
+                Log.err("ERROR - 404");
+                Log.err("settings.json missing badList");
+                Log.err("Make sure settings.json is properly setup");
+                Log.err("============");
+                return;
+            } else {
+                badList = alldata.getJSONObject("badList");
             }
         } catch (Exception e) {
             if (e.getMessage().contains("File not found: config\\mods\\settings.json")){
@@ -118,8 +133,47 @@ public class Main extends Plugin {
                     return null;
                 }
                 pcl.replace(player.uuid, pcl.get(player.uuid)+1);
-                return text;
+                return byteCode.censor(text);
             });
+        });
+    }
+    @Override
+    public void registerServerCommands(CommandHandler handler) {
+        handler.register("bla", "<word>", "adds Bad Word to badList censor", arg -> {
+            JSONObject badlist = alldata.getJSONObject("badList");
+            if (badlist.has(arg[0])) {
+                Log.err("badList already contains `{0}`!", arg[0]);
+            } else {
+                badlist.put(arg[0], "bad");
+            }
+            try {
+                File file = new File("config\\mods\\settings.json");
+                FileWriter out = new FileWriter(file, false);
+                PrintWriter pw = new PrintWriter(out);
+                pw.println(alldata.toString());
+                out.close();
+            } catch (IOException i) {
+                i.printStackTrace();
+            }
+            Log.info("Successfully added {0} to badList!", arg[0]);
+        });
+        handler.register("blr", "<word>", "remover Word to badList censor", arg -> {
+            JSONObject badlist = alldata.getJSONObject("badList");
+            if (!badlist.has(arg[0])) {
+                Log.err("badList does not contain `{0}`!", arg[0]);
+            } else {
+                badlist.remove(arg[0]);
+            }
+            try {
+                File file = new File("config\\mods\\settings.json");
+                FileWriter out = new FileWriter(file, false);
+                PrintWriter pw = new PrintWriter(out);
+                pw.println(alldata.toString());
+                out.close();
+            } catch (IOException i) {
+                i.printStackTrace();
+            }
+            Log.info("Successfully removed {0} to badList!", arg[0]);
         });
     }
 }
