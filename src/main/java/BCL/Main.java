@@ -128,7 +128,7 @@ public class Main extends Plugin {
         Events.on(EventType.ServerLoadEvent.class, event -> {
             netServer.admins.addChatFilter((player, text) -> {
                 if (!data.has("messages")) {
-                    Call.sendMessage("settings.json missing key `messages`.");
+                    Log.err("settings.json missing key `messages`.");
                 } else if (pcl.get(player.uuid) > data.getInt("messages")) {
                     return null;
                 }
